@@ -1,0 +1,14 @@
+# Action for executing a warehouse task with progress feedback
+# Goal
+TaskRequest task
+---
+# Result
+TaskResult result
+---
+# Feedback
+string robot_id                  # Robot executing the task
+float32 progress                 # Overall task progress [0.0 - 1.0]
+string current_phase             # Current phase: "navigating_to_pickup", "loading", "navigating_to_dropoff", "unloading"
+float32 distance_remaining       # Estimated distance remaining [meters]
+float32 estimated_time_remaining # Estimated time remaining [seconds]
+geometry_msgs/Pose current_pose  # Current robot pose

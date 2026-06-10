@@ -1,0 +1,9 @@
+# Service to assign a task to the fleet
+# Fleet manager selects the optimal robot and returns assignment details
+TaskRequest task
+---
+bool success
+string assigned_robot_id         # Robot selected to execute the task
+float32 estimated_time           # Estimated completion time [seconds]
+float32 estimated_distance       # Estimated travel distance [meters]
+string message                   # Human-readable status message

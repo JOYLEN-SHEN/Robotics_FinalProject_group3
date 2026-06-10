@@ -1,0 +1,7 @@
+# Service to cancel an active or pending task
+string task_id                   # Task to cancel
+bool force_cancel                # If true, cancel even if robot is mid-execution
+---
+bool success
+string message                   # Status message (reason if failed)
+string robot_id                  # Robot that was executing the task (if any)

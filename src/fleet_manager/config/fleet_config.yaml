@@ -1,0 +1,61 @@
+# Fleet Manager Configuration — 多AGV动态调度系统
+fleet_manager:
+  ros__parameters:
+    robot_names:
+      - robot_1
+      - robot_2
+      - robot_3
+      - robot_4
+
+    # ---- 调度策略配置 ----
+    fleet_status_hz: 1.0
+
+    # 初始调度策略: greedy / round_robin / hungarian / emergency / load_balanced
+    allocation_strategy: "greedy"
+
+    # 开启后，系统根据负荷等级自动切换调度策略（核心功能）
+    auto_adapt_strategy: true
+
+    # ---- 电池管理 ----
+    battery_threshold: 20.0
+    heartbeat_timeout: 10.0
+    use_sim_time: true
+
+    # ---- 任务参数 ----
+    task_timeout: 120.0
+
+    # ---- 冲突检测（简化版） ----
+    conflict_check_hz: 2.0   # 冲突检测频率（Hz）
+
+    # ---- 负荷分析 ----
+    load_analysis_hz: 0.5    # 负荷分析频率（Hz）
+
+    # ---- 分配器权重（多因子评分） ----
+    weight_distance: 1.0
+    weight_battery: 2.0
+    weight_load: 0.8
+    weight_priority: 3.0
+    weight_deadline: 5.0
+    battery_reserve: 30.0    # 最低电量阈值
+
+    # ---- 冲突消解参数 ----
+    robot_radius: 0.35       # 米
+    safety_distance: 1.0     # 预警距离（米）
+    critical_distance: 0.7   # 临界距离（米）
+
+    # ---- 机器人物理参数 ----
+    loading_duration: 3.0     # 秒
+    unloading_duration: 3.0   # 秒
+    avg_robot_speed: 0.5     # m/s
+
+    # ---- 仓储地图参数 ----
+    warehouse_width: 30.0     # 米
+    warehouse_height: 20.0   # 米
+    graph_resolution: 0.5    # 米/格
+
+    # ---- 负荷等级阈值 ----
+    load_density_low: 0.5
+    load_density_moderate: 1.2
+    load_density_high: 2.0
+    util_high: 0.75
+    util_peak: 0.90

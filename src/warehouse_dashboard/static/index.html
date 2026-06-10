@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Warehouse Fleet Monitor</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+  <header>
+    <h1>🏭 Multi-Robot Warehouse Monitor</h1>
+    <div id="connection-status" class="badge badge-red">Disconnected</div>
+  </header>
+
+  <main>
+    <!-- ===== STATS ROW ===== -->
+    <section class="stats-row">
+      <div class="stat-card">
+        <span class="stat-value" id="stat-active">0</span>
+        <span class="stat-label">Active Tasks</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-pending">0</span>
+        <span class="stat-label">Pending Tasks</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-completed">0</span>
+        <span class="stat-label">Completed</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-failed">0</span>
+        <span class="stat-label">Failed</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-utilization">0%</span>
+        <span class="stat-label">Fleet Util.</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-avgtime">0s</span>
+        <span class="stat-label">Avg Task Time</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-conflicts">0</span>
+        <span class="stat-label">Conflicts Resolved</span>
+      </div>
+    </section>
+
+    <!-- ===== WAREHOUSE MAP + ROBOTS ===== -->
+    <section class="content-row">
+      <div class="panel map-panel">
+        <h2>Warehouse Map</h2>
+        <div class="map-container">
+          <canvas id="warehouse-canvas" width="700" height="467"></canvas>
+        </div>
+        <div class="map-legend">
+          <span class="legend-dot" style="background:#22c55e"></span>IDLE
+          <span class="legend-dot" style="background:#3b82f6"></span>NAVIGATING
+          <span class="legend-dot" style="background:#f97316"></span>CHARGING
+          <span class="legend-dot" style="background:#a855f7"></span>LOADING/UNLOADING
+          <span class="legend-dot" style="background:#ef4444"></span>ERROR
+          <span class="legend-dot" style="background:#eab308"></span>WAITING
+        </div>
+      </div>
+
+      <div class="panel robots-panel">
+        <h2>Robot Status</h2>
+        <div id="robots-container"></div>
+      </div>
+    </section>
+
+    <!-- ===== TASK FORM + LOG ===== -->
+    <section class="content-row">
+      <div class="panel form-panel">
+        <h2>Submit Task</h2>
+        <form id="task-form">
+          <div class="form-grid">
+            <label>Pickup Zone
+              <select id="pickup-zone">
+                <option value="loading_dock_1" data-x="-14" data-y="3">Loading Dock 1</option>
+                <option value="loading_dock_2" data-x="-14" data-y="-3">Loading Dock 2</option>
+                <option value="shelf_r1_s1" data-x="-10" data-y="-8">Shelf R1-S1</option>
+                <option value="shelf_r1_s3" data-x="-10" data-y="0">Shelf R1-S3</option>
+                <option value="shelf_r2_s1" data-x="-4" data-y="-8">Shelf R2-S1</option>
+                <option value="shelf_r2_s3" data-x="-4" data-y="0">Shelf R2-S3</option>
+                <option value="shelf_r3_s1" data-x="4" data-y="-8">Shelf R3-S1</option>
+                <option value="shelf_r3_s3" data-x="4" data-y="0">Shelf R3-S3</option>
+                <option value="shelf_r4_s1" data-x="10" data-y="-8">Shelf R4-S1</option>
+                <option value="shelf_r4_s3" data-x="10" data-y="0">Shelf R4-S3</option>
+              </select>
+            </label>
+            <label>Dropoff Zone
+              <select id="dropoff-zone">
+                <option value="unloading_dock_1" data-x="14" data-y="3">Unloading Dock 1</option>
+                <option value="unloading_dock_2" data-x="14" data-y="-3">Unloading Dock 2</option>
+                <option value="shelf_r1_s5" data-x="-10" data-y="8">Shelf R1-S5</option>
+                <option value="shelf_r2_s5" data-x="-4" data-y="8">Shelf R2-S5</option>
+                <option value="shelf_r3_s5" data-x="4" data-y="8">Shelf R3-S5</option>
+                <option value="shelf_r4_s5" data-x="10" data-y="8">Shelf R4-S5</option>
+              </select>
+            </label>
+            <label>Priority
+              <select id="priority">
+                <option value="0">Low</option>
+                <option value="1" selected>Normal</option>
+                <option value="2">High</option>
+                <option value="3">Critical</option>
+              </select>
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit Task</button>
+        </form>
+      </div>
+
+      <div class="panel log-panel">
+        <h2>Event Log <button class="btn btn-sm" onclick="clearLog()">Clear</button></h2>
+        <div id="event-log"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+# Robot spawn parameters - initial positions and orientations
+# Positions are chosen to avoid shelves and provide clear paths
+
+robots:
+  robot_1:
+    x: -13.0
+    y:  7.0
+    z:  0.05
+    yaw: 0.0      # Facing east (toward the warehouse center)
+    description: "Near charging station 1 (NW corner)"
+
+  robot_2:
+    x:  13.0
+    y:  7.0
+    z:  0.05
+    yaw: 3.14159  # Facing west
+    description: "Near charging station 2 (NE corner)"
+
+  robot_3:
+    x: -13.0
+    y: -7.0
+    z:  0.05
+    yaw: 0.0      # Facing east
+    description: "Near charging station 3 (SW corner)"
+
+  robot_4:
+    x:  13.0
+    y: -7.0
+    z:  0.05
+    yaw: 3.14159  # Facing west
+    description: "Near charging station 4 (SE corner)"
+
+# Warehouse key locations (for reference)
+locations:
+  loading_dock_1:  {x: -14.0, y:  3.0}
+  loading_dock_2:  {x: -14.0, y: -3.0}
+  unloading_dock_1:{x:  14.0, y:  3.0}
+  unloading_dock_2:{x:  14.0, y: -3.0}
+  charging_1:      {x: -13.0, y:  9.0}
+  charging_2:      {x:  13.0, y:  9.0}
+  charging_3:      {x: -13.0, y: -9.0}
+  charging_4:      {x:  13.0, y: -9.0}
