@@ -640,50 +640,193 @@ ros2 run nav2_map_server map_saver_cli \
 
 ### 3.4 步骤3：开启仿真调度系统、发布货物搬运任务
 
-**准备工作：启动Nav2定位**
+> **推荐：使用一键启动脚本（替代繁琐的多终端启动）**
+>
+> 仓库自带 `full_simulation.launch.py` 已经集成了 Gazebo + 4×Nav2 + Fleet Manager + Dashboard + TF Relay + RViz 的完整启动流程（内部用 `TimerAction` 分阶段延迟启动）。`scripts/start_all.py` 进一步把它包装成 tmux 多窗口形式。
+>
+> **⚠ 运行前请确认你已经建好地图**（参见 3.3 步骤2），地图文件位于 `src/warehouse_navigation/maps/warehouse_map.yaml`。
+
+#### 3.4.0 ⭐ 一键启动（推荐）
+
+**首次使用：赋予执行权限**
 
 ```bash
-# 关闭之前的SLAM节点后，启动Nav2定位
-cd ~/multi_robot_warehouse_ws
+cd ~/Desktop/multi-robot-warehouse-main
+chmod +x scripts/*.sh scripts/*.py
+```
+
+**启动完整系统**
+
+```bash
+python3 scripts/start_all.py
+```
+
+启动器会自动：
+
+1. 检查 ROS2 环境、工作区编译、地图文件、依赖工具
+2. 创建 tmux 会话 `warehouse`，共 3 个窗口：
+
+   | 窗口 | 名称 | 用途 |
+   |------|------|------|
+   | `Ctrl+B 0` | simulation | 主仿真（统一日志输出） |
+   | `Ctrl+B 1` | logs       | 错误/警告高亮实时跟踪 |
+   | `Ctrl+B 2` | shell      | 备用 shell（查话题/发任务） |
+
+3. 启动 `full_simulation.launch.py`，内部按以下时间线自动加载：
+
+   ```
+   0s  ──→  Gazebo 世界
+   5s  ──→  4 台 AGV 模型 spawn
+   12s ──→  4 组 Nav2 (amcl+planner+controller+bt_navigator+...)
+   20s ──→  Fleet Manager 调度器
+   22s ──→  Web Dashboard (http://localhost:5000)
+   20s ──→  RViz2 可视化
+   ```
+
+**完整启动约需 30-40 秒**，期间可在窗口 1 看错误/警告高亮跟踪。
+
+**常用操作（所有命令可在仓库根目录执行）**
+
+```bash
+# 启动后另开终端，查看系统运行状态
+./scripts/status.sh
+
+# 实时跟踪日志（多种模式）
+./scripts/tail_logs.sh              # 完整日志
+./scripts/tail_logs.sh errors       # 只看错误/警告（推荐排错时用）
+./scripts/tail_logs.sh fleet        # 只看 Fleet Manager
+./scripts/tail_logs.sh nav2         # 只看 Nav2
+
+# 发布搬运任务（也可在 Dashboard Web 界面提交）
+./scripts/submit_task.sh loading_dock_1 unloading_dock_1
+./scripts/submit_task.sh loading_dock_2 unloading_dock_2 2    # 优先级 2=高
+
+# 完全停止系统
+python3 scripts/stop_all.sh
+```
+
+**高级启动选项**
+
+```bash
+# 无 Gazebo 图形界面（无显示器/远程 SSH）
+python3 scripts/start_all.py --headless
+
+# 不启动 RViz
+python3 scripts/start_all.py --no-rviz
+
+# 不用 tmux（直接前台跑，Ctrl+C 结束一切）
+python3 scripts/start_all.py --no-tmux
+```
+
+**预期结果**：
+
+- 窗口 0 持续滚动启动日志，~30s 后所有节点就绪
+- 浏览器打开 `http://localhost:5000` 看到 Dashboard（4 台 AGV 状态、任务队列）
+- 窗口 1 中错误显示为**红色**，警告显示为**黄色**，INFO 显示为**灰色**
+
+---
+
+#### 3.4.1 备选：手动分终端启动（调试用）
+
+如果需要分别控制某个组件的启动时机（高级调试），可以手动分终端启动：
+
+**终端1：启动完整仿真（含 Gazebo + Nav2 + Fleet + Dashboard + RViz）**
+
+```bash
+cd ~/Desktop/multi-robot-warehouse-main
+source /opt/ros/humble/setup.bash
 source install/setup.bash
 
-# 为4台机器人分别启动Nav2
+ros2 launch warehouse_gazebo full_simulation.launch.py use_sim_time:=true
+```
+
+> 这条命令内部已经按 5s/12s/20s/22s 的顺序延迟启动各子系统，无需额外等待。
+
+**终端2（可选）：实时跟踪日志**
+
+```bash
+cd ~/Desktop/multi-robot-warehouse-main
+./scripts/tail_logs.sh errors
+```
+
+**终端3（可选）：提交任务**
+
+```bash
+cd ~/Desktop/multi-robot-warehouse-main
+./scripts/submit_task.sh loading_dock_1 unloading_dock_1
+```
+
+---
+
+#### 3.4.2 备选：完全手动分组件启动（最细粒度）
+
+如果上面"一键启动"遇到问题需要排错，可以用以下方式**逐个组件**启动，便于定位故障。
+
+**终端1：启动 Gazebo 仿真世界**
+
+```bash
+cd ~/Desktop/multi-robot-warehouse-main
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+
+ros2 launch warehouse_gazebo warehouse_world.launch.py use_sim_time:=true
+```
+
+**终端2：生成4台AGV模型（等Gazebo完全起来后再执行，约5秒）**
+
+```bash
+ros2 launch warehouse_gazebo spawn_multi_robot.launch.py use_sim_time:=true
+```
+
+**终端3：为4台机器人启动 Nav2 定位 + 路径规划（等AGV完全spawn后，约8秒）**
+
+```bash
 ros2 launch warehouse_navigation multi_nav2_bringup.launch.py use_sim_time:=true
 ```
 
-> **预期结果**：所有4台机器人的Nav2节点启动完成，RViz中显示各机器人的定位状态。
+> 启动后约 15-20 秒，4 个 AMCL 节点会完成粒子滤波初始化。
+> 可以用 `ros2 node list | grep amcl` 确认 4 个 amcl 节点都在。
 
-**启动动态调度系统（核心）**
+**终端4：启动 TF 中继节点（让 RViz 看到所有机器人的 TF）**
 
 ```bash
-# 新终端中启动Fleet Manager（动态调度核心）
-cd ~/multi_robot_warehouse_ws
-source install/setup.bash
+ros2 run warehouse_navigation tf_relay.py
+```
 
-# 启动调度器，启用自动策略切换
+**终端5：启动 Fleet Manager 动态调度器**
+
+```bash
 ros2 launch fleet_manager fleet_manager.launch.py \
     use_sim_time:=true \
     allocation_strategy:=greedy \
     auto_adapt_strategy:=true
 ```
 
-> **预期结果**：终端中输出：
+> **预期输出**：
 > ```
-> [fleet_manager] Fleet Manager 启动 | 机器人数量: 4 | 策略: greedy | 自动适应: True
-> [fleet_manager] [策略切换] → 轮询分配（低负荷）
+> [fleet_manager_node-1] [INFO] [fleet_manager]: Fleet Manager 已启动，共 4 个机器人: ['robot_1', 'robot_2', 'robot_3', 'robot_4']
 > ```
 
-**启动Web可视化面板**
+**终端6：启动 Web 可视化面板**
 
 ```bash
-# 新终端中启动Dashboard
-cd ~/multi_robot_warehouse_ws
-source install/setup.bash
-
 ros2 launch warehouse_dashboard dashboard.launch.py
 ```
 
-> **预期结果**：终端输出 `Dashboard running on http://0.0.0.0:5000`，在浏览器中打开该地址即可看到实时车队状态。
+> **预期输出**：
+> ```
+> [dashboard_node-1] Dashboard 节点已启动
+>  * Running on http://0.0.0.0:5000
+> ```
+> 浏览器打开 `http://localhost:5000` 查看实时面板。
+
+**终端7（可选）：启动 RViz2 可视化**
+
+```bash
+ros2 launch warehouse_navigation rviz.launch.py
+# 或
+ros2 run rviz2 rviz2 -d src/warehouse_navigation/config/rviz_multi_robot.rviz
+```
 
 ### 3.5 步骤4：多AGV根据任务负荷高低自动动态调度、自主完成货运任务
 

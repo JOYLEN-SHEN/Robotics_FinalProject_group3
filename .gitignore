@@ -27,10 +27,13 @@ Thumbs.db
 .gazebo/
 *.bag
 
-# Maps (generated at runtime)
+# Maps — ignore generated/scratch maps but allow the canonical warehouse_map
+# to be tracked. Add more specific *.pgm/*.yaml entries below as needed.
 src/warehouse_navigation/maps/*.pgm
 src/warehouse_navigation/maps/*.yaml
 !src/warehouse_navigation/maps/.gitkeep
+!src/warehouse_navigation/maps/warehouse_map.pgm
+!src/warehouse_navigation/maps/warehouse_map.yaml
 
 # Logs
 *.log

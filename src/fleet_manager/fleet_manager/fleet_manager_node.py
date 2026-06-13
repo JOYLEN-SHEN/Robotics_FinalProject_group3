@@ -87,7 +87,6 @@ class FleetManagerNode(Node):
         self.declare_parameter("battery_threshold",   20.0)
         self.declare_parameter("task_timeout",        120.0)
         self.declare_parameter("heartbeat_timeout",   10.0)
-        self.declare_parameter("use_sim_time",        True)
         self.declare_parameter("conflict_check_hz",    2.0)
         self.declare_parameter("load_analysis_hz",     0.5)
 
