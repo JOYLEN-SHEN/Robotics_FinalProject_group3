@@ -178,7 +178,9 @@ def tmux_start(args: argparse.Namespace) -> None:
     )
     subprocess.run([
         "tmux", "new-window", "-t", SESSION, "-n", "logs",
-        "-x", "200", "-y", "50",
+    ], check=True)
+    subprocess.run([
+        "tmux", "resize-window", "-t", f"{SESSION}:1", "-x", "200", "-y", "50",
     ], check=True)
     subprocess.run([
         "tmux", "send-keys", "-t", f"{SESSION}:1", tail_cmd, "Enter",
@@ -197,7 +199,9 @@ def tmux_start(args: argparse.Namespace) -> None:
     )
     subprocess.run([
         "tmux", "new-window", "-t", SESSION, "-n", "shell",
-        "-x", "200", "-y", "50",
+    ], check=True)
+    subprocess.run([
+        "tmux", "resize-window", "-t", f"{SESSION}:2", "-x", "200", "-y", "50",
     ], check=True)
     subprocess.run([
         "tmux", "send-keys", "-t", f"{SESSION}:2", shell_cmd, "Enter",
