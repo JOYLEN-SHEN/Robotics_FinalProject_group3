@@ -13,7 +13,6 @@ find_package(xacro REQUIRED)
 install(DIRECTORY
   urdf
   worlds
-  meshes
   launch
   config
   DESTINATION share/${PROJECT_NAME}
